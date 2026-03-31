@@ -20,7 +20,7 @@ Your team's knowledge lives in Slack threads, email chains, and meeting notes. B
 
 ```bash
 # 1. Clone
-git clone https://github.com/CedarBeach2019/businesslog-ai.git
+git clone https://github.com/Lucineer/businesslog-ai.git
 cd businesslog-ai
 
 # 2. Configure
@@ -37,7 +37,7 @@ Open `http://localhost:3000` — register your admin account and start chatting.
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/CedarBeach2019/businesslog-ai.git
+git clone https://github.com/Lucineer/businesslog-ai.git
 cd businesslog-ai && npm install
 
 # 2. Configure
