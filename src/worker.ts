@@ -307,7 +307,7 @@ app.get('/js/app.js', async (c) => {
 // ---------------------------------------------------------------------------
 
 app.get("/health", (c) => c.json({status:"ok",agent:"BusinessLog"}));
-app.get("/api/health", (c) =>
+app.get("/api/health", (c) => {
   const uptime = Math.floor((Date.now() - startTime) / 1000);
   return c.json({ status: 'ok', version: '1.0.0', uptime });
 });
