@@ -11,6 +11,8 @@ import { softActualize, confidenceScore } from './lib/soft-actualize.js';
 
 import { Hono } from 'hono';
 import { callLLM, generateSetupHTML } from './lib/byok.js';
+import { evapPipeline } from './lib/evaporation-pipeline.js';
+
 import { streamSSE } from 'hono/streaming';
 import { deadbandCheck, deadbandStore, getEfficiencyStats } from './lib/deadband.js';
 import { logResponse } from './lib/response-logger.js';
@@ -315,10 +317,8 @@ app.post('/api/chat/public', async (c) => {
     if (!apiKey) return c.json({ error: 'No API key configured. Visit /setup.' }, 503);
     const messages = [{ role: 'system', content: 'You are BusinessLog.ai, a business management assistant.' }, ...(body.messages || [{ role: 'user', content: body.message || '' }])];
     const userMessage = (body.messages || [{ role: 'user', content: body.message || '' }]).map((m) => m.content).join(' ');
-    const cached = await deadbandCheck(c.env, userMessage);
-    let resp;
-    if (cached) { resp = cached; } else { resp = await callLLM(apiKey, messages); await deadbandStore(c.env, userMessage, resp); }
-    return c.json({ success: true, response: resp });
+    const result = await evapPipeline(c.env, userMessage, () => callLLM(apiKey, messages), 'businesslog-ai');
+    return c.json({ success: true, response: result.response, source: result.source, tokensUsed: result.tokensUsed });
   } catch (e: any) { return c.json({ error: e.message }, 500); }
 });
 
