@@ -331,6 +331,9 @@ npm install
 npx wrangler deploy</code></div></div><div class="footer">BusinessLog.ai — Part of the Cocapn Ecosystem</div></body></html>`);
 });
 
+app.get('/api/evaporation', (c) => c.json({ hot: [], warm: [], coverage: 0, repo: 'businesslog-ai', timestamp: Date.now() }));
+app.get('/api/kg', (c) => c.json({ nodes: [], edges: [], domain: 'businesslog-ai', timestamp: Date.now() }));
+app.get('/api/memory', (c) => c.json({ patterns: [], repo: 'businesslog-ai', timestamp: Date.now() }));
 app.get('/api/confidence', async (c) => { const scores = await getConfidence(c.env); return c.json(scores); });
 app.get('/app', async (c) => {
   return c.html(await c.env.MEMORY.get('public:app.html', 'text') || '<h1>App</h1>');
