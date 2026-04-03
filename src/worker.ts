@@ -7,6 +7,7 @@ import { softActualize, confidenceScore } from './lib/soft-actualize.js';
  */
 
 import { Hono } from 'hono';
+import { callLLM, generateSetupHTML } from './lib/byok.js';
 import { streamSSE } from 'hono/streaming';
 
 // ---------------------------------------------------------------------------
@@ -290,6 +291,27 @@ app.use('*', async (c, next) => {
   if (c.res.headers.get('content-type')?.includes('text/html')) {
     c.res.headers.set('Content-Security-Policy', CSP);
   }
+});
+
+app.options('/*', (c) => new Response(null, {
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+  }
+}));
+
+app.get('/setup', (c) => c.html(generateSetupHTML('businesslog-ai', '#059669')));
+
+app.post('/api/chat/public', async (c) => {
+  try {
+    const body = await c.req.json();
+    const apiKey = c.env?.OPENAI_API_KEY || c.env?.ANTHROPIC_API_KEY || c.env?.GEMINI_API_KEY;
+    if (!apiKey) return c.json({ error: 'No API key configured. Visit /setup.' }, 503);
+    const messages = [{ role: 'system', content: 'You are BusinessLog.ai, a business management assistant.' }, ...(body.messages || [{ role: 'user', content: body.message || '' }])];
+    const resp = await callLLM(apiKey, messages);
+    return c.json({ success: true, response: resp });
+  } catch (e: any) { return c.json({ error: e.message }, 500); }
 });
 
 app.get('/', async (c) => {
